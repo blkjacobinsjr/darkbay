@@ -1,0 +1,45 @@
+### 1. Eine neue Auktion erstellen
+POST http://localhost:3000/auctions
+Content-Type: application/json
+
+{
+  "title": "Gezinkte Würfel",
+  "description": "Perfekt für das nächste Untergrund-Casino",
+  "startingprice": 50.00,
+  "sellerId": "z3r0c00l"
+}
+###
+
+### 2. Alle Auktionen abrufen (Filter für Teil 4)
+GET http://localhost:3000/auctions?status=open&minPrice=10&limit=5
+Accept: application/json
+
+###
+
+### 3. Eine einzelne Auktion abrufen
+GET http://localhost:3000/auctions/1
+Accept: application/json
+
+###
+
+### 4. Ein gültiges Gebot abgeben (Teil 3)
+POST http://localhost:3000/offers
+Content-Type: application/json
+
+{
+  "amount": 60.00,
+  "offererId": "ac1dburn",
+  "auctionId": 1
+}
+
+###
+
+### 5. Ein zu niedriges Gebot abgeben (Sollte 409 Conflict werfen)
+POST http://localhost:3000/offers
+Content-Type: application/json
+
+{
+  "amount": 40.00,
+  "offererId": "noob_hacker",
+  "auctionId": 1
+}

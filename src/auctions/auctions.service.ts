@@ -14,6 +14,9 @@ export class AuctionsService {
 
   async create(createAuctionDto: CreateAuctionDto): Promise<Auction> {
     const auction = this.auctionsRepository.create(createAuctionDto);
+
+    auction.currentprice = auction.startingprice;
+
     if (!auction.endDate) {
       const targetDate = new Date();
       targetDate.setDate(targetDate.getDate() + 3);
@@ -53,12 +56,12 @@ export class AuctionsService {
 
     // 2. Filter nach Mindestpreis
     if (minPrice !== undefined) {
-      queryBuilder.andWhere('auction.currentPrice >= :minPrice', { minPrice });
+      queryBuilder.andWhere('auction.currentprice >= :minPrice', { minPrice });
     }
 
     // 3. Filter nach Maximalpreis
     if (maxPrice !== undefined) {
-      queryBuilder.andWhere('auction.currentPrice <= :maxPrice', { maxPrice });
+      queryBuilder.andWhere('auction.currentprice <= :maxPrice', { maxPrice });
     }
 
     // 4. Sortierung: Nach Enddatum, neueste (am längsten laufende/als letztes endende) zuerst

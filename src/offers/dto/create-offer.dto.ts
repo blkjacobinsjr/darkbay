@@ -1,16 +1,15 @@
-import { IsNumber, IsString, Min, IsNotEmpty } from "class-validator";
+import { IsNumber, IsString, Min, IsNotEmpty, IsInt } from 'class-validator';
 
 export class CreateOfferDto {
-    @IsNumber()
-    @Min(0)
-    amount: number;
+  @IsNumber()
+  @Min(0)
+  amount: number;
 
-    @IsString()
-    @IsNotEmpty()
-    offererId: string;
+  @IsString()
+  @IsNotEmpty()
+  offererId: string;
 
-    @IsString()
-    @IsNotEmpty()
-    auctionId: number;
-
+  @IsInt()
+  @IsNotEmpty()
+  auctionId: number;
 }
