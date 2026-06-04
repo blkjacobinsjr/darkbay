@@ -5,8 +5,6 @@ import {
   Get,
   Param,
   ParseIntPipe,
-  UseInterceptors,
-  ClassSerializerInterceptor,
 } from '@nestjs/common';
 import { OffersService } from './offers.service';
 import { CreateOfferDto } from './dto/create-offer.dto';
@@ -14,9 +12,8 @@ import { plainToInstance } from 'class-transformer';
 import { OfferResponseDto } from './dto/offer-response.dto';
 
 @Controller('offers')
-@UseInterceptors(ClassSerializerInterceptor) // Filtert die Daten anhand der @Expose() Regeln im DTO
 export class OffersController {
-  constructor(private readonly offersService: OffersService) {}
+  constructor(private readonly offersService: OffersService) { }
 
   // POST /offers -> Ein neues Gebot für eine Auktion abgeben
   @Post()
