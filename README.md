@@ -1,98 +1,161 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# DarkBay – Untergrundmarktplatz API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Willkommen bei **DarkBay**, einer Underground-Marktplatz-API, auf der Nutzer Artikel zur Auktion einstellen und gegeneinander bieten. Dieses Backend wird vollständig von Grund auf neu gebaut. Es gibt kein Frontend – alles läuft über eine **RESTful API mit JSON-Payloads**.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+---
 
-## Description
+## Funktionsweise
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Ein Verkäufer erstellt eine Auktion für einen Artikel mit einem Startpreis und einem Enddatum. Andere Nutzer konkurrieren, indem sie Gebote abgeben. Die zentrale Geschäftslogik liegt in der Service-Schicht:
 
-## Project setup
+- Ein gültiges Gebot muss mindestens den Startpreis erreichen und alle bestehenden Gebote **strikt überbieten**.
+- Die Auktion muss zum Zeitpunkt des Gebots noch **offen** sein.
 
-```bash
-$ npm install
-```
+Verstößt eine Anfrage gegen diese Regeln, lehnt die API sie mit einem passenden HTTP-Statuscode ab – kein stilles Scheitern, kein generischer Serverfehler.
 
-## Compile and run the project
+---
 
-```bash
-# development
-$ npm run start
+## Datenmodell
 
-# watch mode
-$ npm run start:dev
+Das Datenmodell dreht sich um eine **1-zu-n-Beziehung**:
 
-# production mode
-$ npm run start:prod
-```
+- Die Tabelle **`auctions`** speichert die Inserate: Titel, Beschreibungen, Startpreise und Enddaten. Wird kein Enddatum angegeben, wird es automatisch auf **drei Tage nach Erstellungsdatum** gesetzt.
+- Die Tabelle **`offers`** speichert die Gebote und verknüpft diese über einen Fremdschlüssel mit der jeweiligen Auktion.
 
-## Run tests
+Diese Beziehung wird genutzt, um den aktuellen Preis zu berechnen, das höchste Gebot abzurufen oder den gesamten Gebotverlauf einer Auktion auszugeben.
 
-```bash
-# unit tests
-$ npm run test
+---
 
-# e2e tests
-$ npm run test:e2e
+## Architekturentscheidung: Vertrauen vs. Authentifizierung
 
-# test coverage
-$ npm run test:cov
-```
+Das Projekt simuliert einen realistischen Übergang (Refactoring), den jedes echte Backend durchläuft:
 
-## Deployment
+### Phase 1 – Dem Client vertrauen
+Zunächst wird dem Client vertraut. Das bedeutet: Ein Request-Body mit `"seller": "z3r0c00l"` oder `"bidder": "ac1dburn"` bestimmt die Identität. So kommen die Kernfunktionen schnell zum Laufen.
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
+### Phase 2 – Echte Authentifizierung
+Später wird dieses blinde Vertrauen aufgehoben und eine ordentliche Authentifizierung eingeführt. Die Felder `seller` und `bidder` verschwinden aus den API-Payloads. Die Datenbank verknüpft Nutzer weiterhin mit ihren Auktionen und Geboten – aber die API liest die Identität **ausschließlich aus einem verifizierten JWT**. Clients können ihre Identität nicht mehr fälschen, da der Server bei jeder geschützten Anfrage die Token-Signatur prüft.
 
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+---
 
-```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
-```
+## Versionskontrolle
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Vor der ersten Zeile Code wird ein **Git-Repository** eingerichtet. Die Arbeit wird versioniert, mit häufigen Commits, aussagekräftigen Commit-Nachrichten und regelmäßigem Push zu GitHub.
 
-## Resources
+---
 
-Check out a few resources that may come in handy when working with NestJS:
+## Projektstruktur – Die sechs Teile
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+### Teil 1 – Projekt-Setup & Datenbankintegration
 
-## Support
+Ziel ist die Grundlage: eine laufende NestJS-Anwendung, die mit einer lokalen SQLite-Datenbank verbunden ist.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+- Neuen NestJS-Workspace initialisieren und Feature-Module strukturieren.
+- Datenbankanbindung via **TypeORM** einrichten.
 
-## Stay in touch
+**Architekturfrage:** Wie konfigurierst du die Datenbankverbindung in der frühen Entwicklungsphase, damit Tabellen beim Start automatisch aus den Entities generiert werden und manuelle Schema-Änderungen entfallen?
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+📖 Ressource: NestJS Database Integration
 
-## License
+---
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+### Teil 2 – Das Auktionsmodul
+
+Erstellung der zentralen Ressource der API. Verkäufer müssen Auktionen anlegen, alle verfügbaren Inserate auflisten und einzelne Einträge abrufen können.
+
+- **Auction-Entity** modellieren: Artikeldetails (Titel, Beschreibung), Preise (Startpreis, aktueller Preis), Lebenszyklus (Enddatum) und Verkäuferidentität.
+- Endpunkte für Erstellung und Abruf entwerfen.
+
+**Designfrage:** Welche Felder muss der Client beim Erstellen mitschicken – und welche soll der Server eigenständig befüllen?
+
+**Geschäftsregel:** Wird beim Erstellen kein Enddatum angegeben, muss die Service-Schicht automatisch eine Standardlaufzeit von **drei Tagen** setzen.
+
+📖 Ressource: NestJS TypeORM Entities
+
+---
+
+### Teil 3 – Das Angebotsmodul & Bietlogik
+
+Dieses Modul implementiert die Kernmechanik von DarkBay. Nutzer reichen Gebote ein, das System prüft sie anhand strenger Regeln.
+
+- **Offer-Entity** modellieren und die Beziehung zur Auktion herstellen. Wie verknüpft man mehrere Gebote mit einem einzigen Inserat, um den vollständigen Bietverlauf festzuhalten?
+- **Biet-Service** implementieren: Vor dem Speichern eines Angebots muss der Status der Auktion validiert werden.
+
+**Randfälle, die behandelt werden müssen:**
+
+| Szenario | Erwartetes Verhalten |
+|---|---|
+| Auktion bereits abgelaufen | Gebot ablehnen |
+| Betrag überbietet aktuellen Preis nicht | Gebot ablehnen |
+| Erstes Gebot liegt unter dem Startpreis | Gebot ablehnen |
+
+**HTTP-Semantik:** Das Ablehnen eines zu niedrigen Gebots ist eine Verletzung einer Geschäftsregel, keine syntaktisch fehlerhafte Anfrage. Welcher HTTP-Statuscode kommuniziert am besten einen *Konflikt mit dem aktuellen Ressourcenzustand*?
+
+📖 Ressource: TypeORM Relations
+
+---
+
+### Teil 4 – RESTful-Feinschliff
+
+Die API wird auf professionelles Niveau gebracht, ohne die Kernfunktionalität zu verändern.
+
+- **Globale Validierung** einführen: Wie stellt man sicher, dass eingehende Payloads den DTO-Strukturen entsprechen und unbekannte Felder automatisch abgewiesen werden?
+- **Datenbankarchitektur schützen:** Response-DTOs definieren, damit Clients nur die Daten erhalten, die für sie bestimmt sind.
+- **Paginierung** und folgende **Filteroptionen** für die Auktionsliste implementieren:
+    - `?status=open|closed`
+    - `?min-price` & `?max-price`
+    - Sortierung nach Enddatum, neueste zuerst
+
+**Implementierungsdetail:** Wie gehst du mit der gewünschten Seitengröße und dem Filterstatus (offen vs. geschlossen) um? Paginierte Antworten müssen **Metadaten** enthalten (Gesamtanzahl der Einträge, Gesamtanzahl der Seiten).
+
+📖 Ressource: NestJS Validation
+
+---
+
+### Teil 5 – Authentifizierung & Autorisierung
+
+Die Klartextfelder `seller` und `bidder` werden durch ein sicheres Identitätssystem ersetzt. Die API liest die Nutzeridentität künftig ausschließlich aus einem verifizierten Token.
+
+- **User-Modell** mit sicher gehashen Passwörtern einführen.
+- **JWT-basierten Login-Flow** implementieren.
+
+**Sicherheitsfrage:** Wie schützt man die API so, dass das Erstellen von Auktionen und das Abgeben von Geboten eine Authentifizierung erfordert, während das Durchsuchen der Auktionsliste vollständig öffentlich bleibt?
+
+- Auktions- und Angebots-Services **refactoren**: `seller`- und `bidder`-Felder aus den eingehenden DTOs entfernen und die Identität direkt aus dem verifizierten Token ziehen.
+
+**Geschäftslogik-Upgrade:** Wie verhindert man mit echter Authentifizierung, dass ein Verkäufer auf das eigene Inserat bietet?
+
+📖 Ressource: NestJS Authentication
+
+---
+
+### Teil 6 – API-Dokumentation mit Swagger
+
+Lebendige, interaktive Dokumentation wird direkt aus dem Code generiert. Entwickler sollen Endpunkte verstehen und direkt im Browser testen können.
+
+- **Swagger mounten** und so konfigurieren, dass DTOs erkannt werden.
+- **Authentifizierte Routen dokumentieren:** Die UI muss einen *Authorize*-Dialog bereitstellen, damit Nutzer ihr JWT einfügen und geschützte Endpunkte testen können.
+- **Schema anreichern:** Wo Typen uneindeutig sind, werden Decorators eingesetzt, um klare Beschreibungen und realistische Beispiele zu liefern (z. B. das erwartete Datumsformat).
+
+📖 Ressource: NestJS OpenAPI
+
+---
+
+## Bonus-Aufgaben
+
+Wer die Hauptanforderungen früh abschließt, kann eine oder mehrere dieser Aufgaben angehen:
+
+### 🔖 Merklisten (Watchlists)
+Nutzer können Auktionen zu ihrer persönlichen Merkliste hinzufügen, entfernen und abrufen.
+
+### 🗄️ Datenbank-Migrationen
+Automatische Synchronisierung deaktivieren. Eine initiale Migration schreiben, die Tabellen manuell erstellt – der einzig sichere Weg, ein Schema in der Produktion weiterzuentwickeln.
+
+### 📊 Abgeleiteter Status
+Ein berechnetes `status`-Feld (`open` oder `closed`) in der Auktionsantwort ausgeben, basierend auf dem aktuellen Zeitstempel – der Client muss selbst kein Datum vergleichen.
+
+### 🛡️ Rollenbasierte Zugriffskontrolle (RBAC)
+Eine Admin-Rolle einführen. Ein Guard implementiert, der Admins das Löschen beliebiger Auktionen erlaubt, während normale Nutzer nur ihre eigenen Inserate löschen dürfen.
+
+### ⏱️ Rate Limiting
+Gebotsabgaben überwachen. Plötzliche Biet-Bursts desselben Nutzers innerhalb eines kurzen Zeitfensters werden mit `429 Too Many Requests` abgewiesen.
