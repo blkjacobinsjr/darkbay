@@ -30,6 +30,7 @@ export class AuctionsController {
   }
 
   @Get()
+  @UseGuards(JwtAuthGuard)
   async findAll(
     @Query() queryDto: PaginationDto,
   ): Promise<PaginatedAuctionsResponseDto> {

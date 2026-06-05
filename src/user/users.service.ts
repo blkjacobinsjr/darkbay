@@ -18,7 +18,7 @@ export class UsersService {
     if (existingUser) {
       throw new ConflictException('Username already exists');
     }
-    const passwordHash = await bcrypt.hash(dto.passwordHash, 10);
+    const passwordHash = await bcrypt.hash(dto.password, 10);
     const user = this.users.create({ username: dto.username, passwordHash });
     return this.users.save(user);
   }

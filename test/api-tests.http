@@ -152,19 +152,19 @@ POST http://localhost:3000/users/register
 Content-Type: application/json
 
 {
-  "username": "melanieB",
-  "passwordHash": "geheimesPasswort123"
+  "username": "melanie",
+  "password": "geheimesPasswort123"
 }
 
 
 ### 2. Login-Versuch (Jetzt mit dem frisch angelegten User)
 # Der LocalAuthGuard prüft das Passwort via bcrypt gegen die Datenbank
-POST {{baseUrl}}/auth/login
+POST  http://localhost:3000/auth/login
 Content-Type: application/json
 
 {
-  "username": "{{username}}",
-  "password": "{{password}}"
+  "username": "melanie",
+  "password": "geheimesPasswort123"
 }
 
 > {%
@@ -175,6 +175,6 @@ Content-Type: application/json
 
 ### 3. Test einer geschützten Route
 # Nutzt das Token aus Schritt 2
-GET {{baseUrl}}/users/profile
-Authorization: Bearer {{auth_token}}
+GET http://localhost:3000/auctions
+//Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6Im1lbGFuaWUiLCJzdWIiOjEsImlhdCI6MTc4MDY2OTcyNSwiZXhwIjoxNzgwNjczMzI1fQ.YHafs0Wi1N_cDeN590NWx1YO87yxeIa-EKsqMGjL8bI
 Content-Type: application/json
