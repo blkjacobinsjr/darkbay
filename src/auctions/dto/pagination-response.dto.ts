@@ -1,16 +1,15 @@
-import { Expose } from "class-transformer";
+import { Expose } from 'class-transformer';
 
 export class PaginationResponseDto {
-    @Expose()
-    totalitems: number;
+  @Expose()
+  totalitems: number;
 
-    @Expose()
-    itemcount: number;
+  @Expose()
+  itemcount: number;
 
-    @Expose()
-    totalpages: number;
+  @Expose()
+  totalpages: number;
 
-    @Expose()
-    currentpage: number;
-
+  @Expose()
+  currentpage: number;
 }

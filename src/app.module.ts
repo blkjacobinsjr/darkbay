@@ -6,6 +6,8 @@ import { OfferModule } from './offers/offer.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Auction } from './auctions/auctions.entity';
 import { Offer } from './offers/offers.entity';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './user/users.module';
 
 @Module({
   imports: [
@@ -18,6 +20,8 @@ import { Offer } from './offers/offers.entity';
     }),
     AuctionsModule,
     OfferModule,
+    AuthModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],
