@@ -1,22 +1,32 @@
-import { IsString, MaxLength, IsNumber, Min, IsDate } from "class-validator";
-
+import {
+  IsString,
+  MaxLength,
+  IsNumber,
+  Min,
+  IsDate,
+  IsOptional,
+} from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateAuctionDto {
-    @IsString()
-    @MaxLength(150)
-    title: string;
+  @IsString()
+  @MaxLength(150)
+  title: string;
 
-    @IsString()
-    @MaxLength(500)
-    description: string;
+  @IsString()
+  @MaxLength(500)
+  @IsOptional()
+  description?: string;
 
-    @IsNumber()
-    @Min(0)
-    startingprice: number;
+  @IsNumber()
+  @Min(0)
+  startingprice: number;
 
-    @IsDate()
-    endDate: Date;
+  @Type(() => Date) // Wandelt den String vom Client in ein Date-Objekt um
+  @IsDate()
+  @IsOptional()
+  endDate?: Date;
 
-    @IsString()
-    sellerId: string;
+  @IsString()
+  sellerId: string;
 }

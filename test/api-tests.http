@@ -1,0 +1,143 @@
+### ===================================================================
+### AUKTIONSMODUL (Auctions)
+### ===================================================================
+
+### 1. Eine neue Auktion erstellen
+POST http://localhost:3000/auctions
+Content-Type: application/json
+
+{
+  "title": "Gezinkte Würfel",
+  "description": "Perfekt für das nächste Untergrund-Casino",
+  "startingprice": 50.00,
+  "sellerId": "z3r0c00l"
+}
+###
+
+### 2. Eine zweite Auktion mit festem Enddatum erstellen
+POST http://localhost:3000/auctions
+Content-Type: application/json
+
+{
+  "title": "Antikes Zauberbuch",
+  "description": "Einige Seiten sind leicht angekokelt.",
+  "startingprice": 120.50,
+  "endDate": "2026-06-15T18:00:00.000Z",
+  "sellerId": "merlin_99"
+}
+
+###
+
+### 3. Alle Auktionen abrufen (Filter für Teil 4)
+GET http://localhost:3000/auctions?status=open&minPrice=10&limit=5
+Accept: application/json
+
+###
+
+### 4. Auktionen filtern und paginieren
+# Hinweis: Falls dein Query-DTO 'minPrice' (CamelCase) erwartet, passt das so:
+GET http://localhost:3000/auctions?status=open&minPrice=10&limit=5
+Accept: application/json
+
+###
+
+### 5. Eine einzelne Auktion abrufen
+GET http://localhost:3000/auctions/1
+Accept: application/json
+
+###
+
+### ===================================================================
+### ANGEBOTSMODUL (Offers & Bietlogik)
+### ===================================================================
+
+### 6. Ein gültiges Gebot abgeben (Teil 3)
+POST http://localhost:3000/offers
+Content-Type: application/json
+
+{
+  "amount": 60.00,
+  "offererId": "ac1dburn",
+  "auctionId": 1
+}
+
+###
+
+### 7. Ein zu niedriges Gebot abgeben (Sollte 409 Conflict werfen)
+POST http://localhost:3000/offers
+Content-Type: application/json
+
+{
+  "amount": 40.00,
+  "offererId": "noob_hacker",
+  "auctionId": 1
+}
+
+###
+
+### 8. Den Gebotsverlauf für eine bestimmte Auktion abrufen
+GET http://localhost:3000/offers/auction/1
+Accept: application/json
+
+###
+
+### ===================================================================
+### Pagination und Filter
+### ===================================================================
+
+### 1. Auktion erstellen: Günstiges Werkzeug
+POST http://localhost:3000/auctions
+Content-Type: application/json
+
+{
+  "title": "Alter Hammer",
+  "description": "Etwas rostig, aber erfüllt seinen Zweck.",
+  "startingprice": 5.00,
+  "sellerId": "heimwerker_bob"
+}
+
+###
+
+### 2. Auktion erstellen: Teure Elektronik
+POST http://localhost:3000/auctions
+Content-Type: application/json
+
+{
+  "title": "High-End Gaming PC",
+  "description": "Mit RTX 4090 und Wasserkühlung. Wie neu!",
+  "startingprice": 2500.00,
+  "sellerId": "gamer_pro"
+}
+
+###
+
+### 3. Auktion erstellen: Mittelteures Sammlerstück
+POST http://localhost:3000/auctions
+Content-Type: application/json
+
+{
+  "title": "Vintage Schallplattenspieler",
+  "description": "Aus den 70ern, voll funktionsfähig.",
+  "startingprice": 150.00,
+  "sellerId": "vinyl_lover"
+}
+
+### 4. TEST: Limit auf 2 Einträge setzen (Seite 1)
+# Erwartung: Du siehst nur 2 Auktionen, aber 'totalItems' im Meta-Objekt sollte 3 sein!
+GET http://localhost:3000/auctions?limit=2&page=1
+Accept: application/json
+
+###
+
+### 5. TEST: Seite 2 aufrufen (Blättern)
+# Erwartung: Du siehst die verbleibende 3. Auktion, die auf Seite 1 keinen Platz mehr hatte.
+GET http://localhost:3000/auctions?limit=2&page=2
+Accept: application/json
+
+###
+
+### 6. TEST: Kombi aus Filter & Paginierung
+# Wir filtern nach 'open' und einem Mindestpreis von 50 Euro, bei einem Limit von 5.
+# Erwartung: Der 'Alte Hammer' (5.00 €) fliegt aus den Ergebnissen raus!
+GET http://localhost:3000/auctions?status=open&minPrice=50&limit=5
+Accept: application/json
