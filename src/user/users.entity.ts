@@ -9,15 +9,15 @@ import {
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
-  id!: number;
+  id: number;
 
   @Column({ type: 'text', unique: true, nullable: false })
-  username!: string;
+  username: string;
 
-  @Column()
+  @Column({ nullable: true })
   @Exclude()
-  passwordHash!: string;
+  passwordHash: string;
 
-  @CreateDateColumn()
-  createdAt!: Date;
+  @CreateDateColumn({ nullable: true })
+  createdAt: Date;
 }

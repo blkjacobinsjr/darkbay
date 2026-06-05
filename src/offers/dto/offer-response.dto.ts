@@ -1,17 +1,15 @@
-import { Expose } from "class-transformer";
+import { Expose } from 'class-transformer';
 
 export class OfferResponseDto {
+  @Expose()
+  id: number;
 
-    @Expose()
-    id: number;
+  @Expose()
+  amount: number;
 
-    @Expose()
-    amount: number;
+  @Expose()
+  createdAt: Date;
 
-    @Expose()
-    createdAt: Date;
-
-    @Expose()
-    offererId: string;
-
+  @Expose()
+  offererId: string;
 }

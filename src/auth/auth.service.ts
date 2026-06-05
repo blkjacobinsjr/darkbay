@@ -1,28 +1,31 @@
 import { Injectable } from '@nestjs/common';
-import { async } from 'rxjs';
+import { UsersService } from '../user/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
-import { UserService } from 'src/user/user.service';
+import { User } from '../user/users.entity';
 
 @Injectable()
 export class AuthService {
-    constructor (
-        private readonly userService: UserService,
-        private readonly jwtService: JwtService,
-    ){}
-    
-    async validateUser(username: string, password: string): Promise<any> {
-        const user = await this.userService.findByUsername(username);
-        if (user && bcrypt.compare(password, user.password)) {
-            return user;
-        }
-        return null;
-    }
+  constructor(
+    private usersService: UsersService,
+    private jwtService: JwtService,
+  ) {}
 
-    async login(user: {id: number; username: string}) {
-        const payload = { username: user.username, sub: user.id };
-        return {
-            access_token: this.jwtService.sign(payload),
-        }
-}
+  // 1. Wird von der LocalStrategy aufgerufen
+  async validateUser(username: string, pass: string): Promise<User | null> {
+    const user = await this.usersService.findByUsername(username);
+
+    if (user && (await bcrypt.compare(pass, user.passwordHash))) {
+      return user;
+    }
+    return null;
+  }
+
+  // 2. Wird vom AuthController aufgerufen, nachdem der Guard erfolgreich war
+  login(user: User) {
+    const payload = { username: user.username, sub: user.id };
+    return {
+      accessToken: this.jwtService.sign(payload),
+    };
+  }
 }

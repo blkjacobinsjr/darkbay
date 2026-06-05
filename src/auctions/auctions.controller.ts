@@ -6,6 +6,7 @@ import {
   ParseIntPipe,
   Param,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CreateAuctionDto } from './dto/create-auctions.dto';
 import { AuctionResponseDto } from './dto/auction-response.dto';
@@ -13,12 +14,14 @@ import { plainToInstance } from 'class-transformer';
 import { AuctionsService } from './auctions.service';
 import { PaginationDto } from './dto/pagination.dto';
 import { PaginatedAuctionsResponseDto } from './dto/metadata.dto';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
 @Controller('auctions')
 export class AuctionsController {
   constructor(private readonly auctionsService: AuctionsService) {}
 
   @Post()
+  @UseGuards(JwtAuthGuard)
   async create(
     @Body() createAuctionDto: CreateAuctionDto,
   ): Promise<AuctionResponseDto> {

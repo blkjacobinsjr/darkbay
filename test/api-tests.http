@@ -141,3 +141,40 @@ Accept: application/json
 # Erwartung: Der 'Alte Hammer' (5.00 €) fliegt aus den Ergebnissen raus!
 GET http://localhost:3000/auctions?status=open&minPrice=50&limit=5
 Accept: application/json
+
+@baseUrl = http://localhost:3000
+@username = melanieB
+@password = geheimesPawort123
+
+### 1. User registrieren (Erstmalig anlegen)
+# Schickt die Daten an deinen UsersController oder AuthController (je nachdem, wo deine Register-Route liegt)
+POST http://localhost:3000/users/register
+Content-Type: application/json
+
+{
+  "username": "melanieB",
+  "passwordHash": "geheimesPasswort123"
+}
+
+
+### 2. Login-Versuch (Jetzt mit dem frisch angelegten User)
+# Der LocalAuthGuard prüft das Passwort via bcrypt gegen die Datenbank
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}"
+}
+
+> {%
+  // Speichert das Token für geschützte Routen
+  client.global.set("auth_token", response.body.accessToken);
+%}
+
+
+### 3. Test einer geschützten Route
+# Nutzt das Token aus Schritt 2
+GET {{baseUrl}}/users/profile
+Authorization: Bearer {{auth_token}}
+Content-Type: application/json

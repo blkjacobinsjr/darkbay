@@ -1,26 +1,19 @@
-import { Injectable, ExecutionContext, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { Reflector } from '@nestjs/core';
-import { SetMetadata } from '@nestjs/common';
+import { User } from '../user/users.entity';
 
+@Injectable()
+export class JwtAuthGuard extends AuthGuard('jwt') {
+  handleRequest<TUser = User>(err: any, user: any): TUser {
+    if (err || !user) {
+      throw (
+        err ||
+        new UnauthorizedException(
+          'Zugriff verweigert. Ungültiges oder fehlendes Token.',
+        )
+      );
+    }
 
-export const IS_PUBLIC_KEY = 'isPublic';
-export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
-
-@Injectable() 
-export class JwtAuthGuard extends AuthGuard('jwt') 
-{ constructor(private reflector: Reflector) { 
-    super(); } canActivate(context: ExecutionContext) 
-    { 
-        const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [ context.getHandler(), context.getClass(), ]); 
-        if (isPublic) 
-        
-            return true; 
-            return super.canActivate(context); 
-        } 
-        handleRequest(err: any, user: any) 
-        { 
-            if (err || !user) 
-                { 
-                    throw err || new UnauthorizedException('Ungültiges oder fehlendes Token.'); } 
-                    return user; } }
+     return user as TUser;
+  }
+}

@@ -1,16 +1,23 @@
-import { Controller, Post, Body, Injectable } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Req } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { UserService } from '../user/user.service';
-import { User } from '../user/users.entity';
-import { LoginDto } from './dto/login.dto';
+import { JwtAuthGuard } from './jwt-auth.guard';
+
+export interface AuthenticatedRequest extends Request {
+  user: {
+    id: number;
+    username: string;
+    passwordHash: string;
+    createdAt: Date;
+  };
+}
 
 @Controller('auth')
 export class AuthController {
-    constructor(private readonly authService: AuthService, 
-        private readonly usersService: UserService
-    ) {}
-    @Post('login')
-    async login(@Body()loginDto: LoginDto): Promise<User> {
-        return this.authService.login(request.user);
-    }
+  constructor(private readonly authService: AuthService) {}
+
+  @UseGuards(JwtAuthGuard)
+  @Post('login')
+  login(@Req() request: AuthenticatedRequest) {
+    return this.authService.login(request.user);
+  }
 }
